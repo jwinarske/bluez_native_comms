@@ -27,7 +27,6 @@ add_library(bluez_native STATIC
 
 target_include_directories(bluez_native
     PUBLIC include
-    PRIVATE generated
 )
 
 target_link_libraries(bluez_native PUBLIC sdbus-c++ pthread)
@@ -43,7 +42,7 @@ add_library(bluez_nc SHARED
 )
 
 target_include_directories(bluez_nc
-    PRIVATE include generated
+    PRIVATE include
 )
 
 target_link_libraries(bluez_nc PRIVATE sdbus-c++ pthread)

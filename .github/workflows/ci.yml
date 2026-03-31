@@ -38,37 +38,6 @@ jobs:
       # Verify all pub.dev requirements pass before any PR merges
       - run: dart pub publish --dry-run
 
-  # ── Release build (verify native layer compiles) ─────────────────────────
-  build:
-    name: Release build
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-        with: { submodules: recursive }
-      - name: Install deps
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build \
-            clang-19 \
-            libsystemd-dev \
-            libexpat1-dev
-      - name: Build sdbus-c++-xml2cpp
-        run: |
-          cmake -B build-codegen native/third_party/sdbus-cpp -GNinja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_CXX_COMPILER=clang++-19 \
-            -DCMAKE_C_COMPILER=clang-19 \
-            -DSDBUSCPP_BUILD_CODEGEN=ON \
-            -DSDBUSCPP_BUILD_LIBSYSTEMD=OFF \
-            -DBUILD_SHARED_LIBS=OFF
-          cmake --build build-codegen --target sdbus-c++-xml2cpp --parallel
-      - name: Verify proxy generation
-        run: |
-          ./scripts/generate_proxies.sh
-          git diff --exit-code native/generated/ || \
-            (echo "Generated proxies are out of date. Run scripts/generate_proxies.sh" && exit 1)
-
   # ── C++ unit tests ───────────────────────────────────────────────────────
   test-cpp:
     name: C++ unit tests
