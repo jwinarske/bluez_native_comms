@@ -68,3 +68,27 @@ jobs:
           ./scripts/generate_proxies.sh
           git diff --exit-code native/generated/ || \
             (echo "Generated proxies are out of date. Run scripts/generate_proxies.sh" && exit 1)
+
+  # ── C++ unit tests ───────────────────────────────────────────────────────
+  test-cpp:
+    name: C++ unit tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build \
+            clang-19 \
+            libgtest-dev
+      - name: Build + test
+        run: |
+          cmake -B build native/ -GNinja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_COMPILER=clang++-19 \
+            -DCMAKE_C_COMPILER=clang-19 \
+            -DBUILD_TESTING=ON
+          cmake --build build --parallel
+          ctest --test-dir build --output-on-failure -j4
