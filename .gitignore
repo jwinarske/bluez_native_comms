@@ -31,3 +31,5 @@ doc/
 # Coverage
 coverage/
 *.lcov
+
+.cache

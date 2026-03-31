@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bluez_native_comms/bluez_native_comms.dart';
 import 'package:flutter/material.dart';
 
@@ -19,6 +21,36 @@ class DeviceScreen extends StatefulWidget {
 
 class _DeviceScreenState extends State<DeviceScreen> {
   bool _connecting = false;
+  StreamSubscription<List<String>>? _propsSub;
+  StreamSubscription<BlueZAdapter>? _adapterSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Monitor device property changes (Connected, ServicesResolved, etc.)
+    _propsSub = widget.device.propertiesChanged.listen(_onDeviceChanged);
+    // Monitor adapter power — if powered off, pop back.
+    _adapterSub = widget.client.adapterChanged.listen(_onAdapterChanged);
+  }
+
+  void _onDeviceChanged(List<String> changed) {
+    if (!mounted) return;
+    if (changed.contains('Connected') && !widget.device.connected) {
+      // Device disconnected — pop back to scanner.
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      return;
+    }
+    setState(() {});
+  }
+
+  void _onAdapterChanged(BlueZAdapter adapter) {
+    if (!mounted) return;
+    if (!adapter.powered) {
+      // Adapter powered off — pop back to scanner.
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      return;
+    }
+  }
 
   Future<void> _connect() async {
     setState(() => _connecting = true);
@@ -37,7 +69,14 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   Future<void> _disconnect() async {
     await widget.device.disconnect();
-    if (mounted) setState(() {});
+    // The _onDeviceChanged listener will pop back when Connected becomes false.
+  }
+
+  @override
+  void dispose() {
+    _propsSub?.cancel();
+    _adapterSub?.cancel();
+    super.dispose();
   }
 
   @override

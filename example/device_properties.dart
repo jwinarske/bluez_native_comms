@@ -4,14 +4,18 @@ import 'dart:async';
 
 import 'package:bluez_native_comms/bluez_native_comms.dart';
 
+import 'example_utils.dart';
+
 Future<void> main(List<String> args) async {
   if (args.isEmpty) {
-    print('Usage: dart run example/device_properties.dart <device_address>');
+    print('Usage: dart run example/device_properties.dart <device_address> '
+        '[--timeout <seconds>]');
     print('');
     print('Monitors property changes (RSSI, Connected, etc.) for 30 seconds.');
     return;
   }
 
+  final timeout = parseScanTimeout(args);
   final client = BlueZClient();
   await client.connect();
 
@@ -23,23 +27,14 @@ Future<void> main(List<String> args) async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
-  print('Scanning for ${args[0]}...');
-  await adapter.startDiscovery();
-
-  BlueZDevice? target;
-  await for (final device in client.deviceAdded) {
-    if (device.address.toUpperCase() == args[0].toUpperCase()) {
-      target = device;
-      break;
-    }
-  }
-
+  final target = await findDevice(client, adapter, args[0], timeout: timeout);
   if (target == null) {
-    print('Device not found.');
-    await adapter.stopDiscovery();
     await client.close();
     return;
   }
+
+  // Start discovery to receive RSSI updates.
+  await adapter.startDiscovery();
 
   print('Found: ${target.name.isNotEmpty ? target.name : target.address}');
   print('  Address:    ${target.address} (${target.addressType})');

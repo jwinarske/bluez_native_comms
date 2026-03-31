@@ -36,10 +36,20 @@ struct glz::meta<ManufacturerDataEntry> {
       glz::field("data", &ManufacturerDataEntry::data));
 };
 
+// ── Adapter property change mask bits ───────────────────────────────────────
+enum AdapterChangedBit : uint32_t {
+  kPoweredBit = 1u << 0,
+  kDiscoveringBit = 1u << 1,
+  kDiscoverableBit = 1u << 2,
+  kPairableBit = 1u << 3,
+  kAdapterAliasBit = 1u << 4,
+};
+
 // ── Adapter properties ──────────────────────────────────────────────────────
 
 struct BlueZAdapterProps {
   std::string objectPath;  // e.g. "/org/bluez/hci0"
+  uint32_t changedMask{};  // Bitmask of AdapterChangedBit values.
   std::string address;
   std::string name;
   std::string alias;
@@ -54,6 +64,7 @@ template <>
 struct glz::meta<BlueZAdapterProps> {
   static constexpr auto fields = std::make_tuple(
       glz::field("objectPath", &BlueZAdapterProps::objectPath),
+      glz::field("changedMask", &BlueZAdapterProps::changedMask),
       glz::field("address", &BlueZAdapterProps::address),
       glz::field("name", &BlueZAdapterProps::name),
       glz::field("alias", &BlueZAdapterProps::alias),
@@ -66,10 +77,26 @@ struct glz::meta<BlueZAdapterProps> {
       glz::field("uuids", &BlueZAdapterProps::uuids));
 };
 
+// ── Device property change mask bits ────────────────────────────────────────
+// Used in BlueZDeviceProps::changedMask to indicate which fields were
+// explicitly set in a PropertiesChanged update (vs. left at defaults).
+// For 0x04 (DeviceAdded / full snapshot) events, changedMask == ~0u.
+enum DeviceChangedBit : uint32_t {
+  kConnectedBit = 1u << 0,
+  kRSSIBit = 1u << 1,
+  kPairedBit = 1u << 2,
+  kServicesResolvedBit = 1u << 3,
+  kNameBit = 1u << 4,
+  kTrustedBit = 1u << 5,
+  kBlockedBit = 1u << 6,
+  kAliasBit = 1u << 7,
+};
+
 // ── Device properties ───────────────────────────────────────────────────────
 
 struct BlueZDeviceProps {
   std::string objectPath;
+  uint32_t changedMask{};  // Bitmask of DeviceChangedBit values.
   std::string adapterPath;
   std::string address;
   std::string addressType;  // "public" | "random"
@@ -94,6 +121,7 @@ template <>
 struct glz::meta<BlueZDeviceProps> {
   static constexpr auto fields = std::make_tuple(
       glz::field("objectPath", &BlueZDeviceProps::objectPath),
+      glz::field("changedMask", &BlueZDeviceProps::changedMask),
       glz::field("adapterPath", &BlueZDeviceProps::adapterPath),
       glz::field("address", &BlueZDeviceProps::address),
       glz::field("addressType", &BlueZDeviceProps::addressType),

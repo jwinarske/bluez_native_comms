@@ -10,7 +10,14 @@ class ManufacturerDataEntry {
 
 /// Adapter properties from BlueZ.
 class BlueZAdapterProps {
+  static const int kPoweredBit = 1 << 0;
+  static const int kDiscoveringBit = 1 << 1;
+  static const int kDiscoverableBit = 1 << 2;
+  static const int kPairableBit = 1 << 3;
+  static const int kAliasBit = 1 << 4;
+
   final String objectPath;
+  final int changedMask;
   final String address;
   final String name;
   final String alias;
@@ -23,6 +30,7 @@ class BlueZAdapterProps {
 
   const BlueZAdapterProps({
     required this.objectPath,
+    this.changedMask = 0,
     this.address = '',
     this.name = '',
     this.alias = '',
@@ -37,7 +45,19 @@ class BlueZAdapterProps {
 
 /// Device properties from BlueZ.
 class BlueZDeviceProps {
+  /// Bitmask indicating which fields were explicitly set in a property
+  /// change event. For full snapshots (DeviceAdded), all bits are set.
+  static const int kConnectedBit = 1 << 0;
+  static const int kRSSIBit = 1 << 1;
+  static const int kPairedBit = 1 << 2;
+  static const int kServicesResolvedBit = 1 << 3;
+  static const int kNameBit = 1 << 4;
+  static const int kTrustedBit = 1 << 5;
+  static const int kBlockedBit = 1 << 6;
+  static const int kAliasBit = 1 << 7;
+
   final String objectPath;
+  final int changedMask;
   final String adapterPath;
   final String address;
   final String addressType;
@@ -59,6 +79,7 @@ class BlueZDeviceProps {
 
   const BlueZDeviceProps({
     required this.objectPath,
+    this.changedMask = 0,
     this.adapterPath = '',
     this.address = '',
     this.addressType = '',

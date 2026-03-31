@@ -2,6 +2,8 @@
 
 #include "device_bridge.h"
 
+#include <memory>
+#include <optional>
 #include <utility>
 
 DeviceBridge::DeviceBridge(sdbus::IConnection& conn, std::string device_path)
@@ -13,31 +15,46 @@ DeviceBridge::DeviceBridge(sdbus::IConnection& conn, std::string device_path)
 
 // ── Async operations ────────────────────────────────────────────────────────
 
-void DeviceBridge::connect(Dart_Port_DL result_port) {
-  try {
-    proxy_->callMethod("Connect").onInterface(kDeviceIface);
-    post_success(result_port);
-  } catch (const sdbus::Error& e) {
-    post_error(result_port, device_path_, e.getName(), e.getMessage());
-  }
+void DeviceBridge::connect_async(sdbus::IConnection& conn,
+                                 const std::string& device_path,
+                                 Dart_Port_DL result_port) {
+  call_device_method_async(conn, device_path, "Connect", result_port);
 }
 
-void DeviceBridge::disconnect(Dart_Port_DL result_port) {
-  try {
-    proxy_->callMethod("Disconnect").onInterface(kDeviceIface);
-    post_success(result_port);
-  } catch (const sdbus::Error& e) {
-    post_error(result_port, device_path_, e.getName(), e.getMessage());
-  }
+void DeviceBridge::disconnect_async(sdbus::IConnection& conn,
+                                    const std::string& device_path,
+                                    Dart_Port_DL result_port) {
+  call_device_method_async(conn, device_path, "Disconnect", result_port);
 }
 
-void DeviceBridge::pair(Dart_Port_DL result_port) {
-  try {
-    proxy_->callMethod("Pair").onInterface(kDeviceIface);
-    post_success(result_port);
-  } catch (const sdbus::Error& e) {
-    post_error(result_port, device_path_, e.getName(), e.getMessage());
-  }
+void DeviceBridge::pair_async(sdbus::IConnection& conn,
+                              const std::string& device_path,
+                              Dart_Port_DL result_port) {
+  call_device_method_async(conn, device_path, "Pair", result_port);
+}
+
+void DeviceBridge::call_device_method_async(sdbus::IConnection& conn,
+                                            const std::string& device_path,
+                                            const char* method_name,
+                                            Dart_Port_DL result_port) {
+  // The proxy must stay alive until the async callback fires.
+  // Capture it as a shared_ptr in the callback lambda.
+  auto proxy = std::shared_ptr<sdbus::IProxy>(
+      sdbus::createProxy(conn, sdbus::ServiceName{kBluezService},
+                         sdbus::ObjectPath{device_path})
+          .release());
+
+  proxy->callMethodAsync(method_name)
+      .onInterface(kDeviceIface)
+      .uponReplyInvoke(
+          [proxy, device_path, result_port](std::optional<sdbus::Error> error) {
+            if (error) {
+              post_error(result_port, device_path, error->getName(),
+                         error->getMessage());
+            } else {
+              post_success(result_port);
+            }
+          });
 }
 
 void DeviceBridge::cancel_pairing() {

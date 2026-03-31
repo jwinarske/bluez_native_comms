@@ -1,5 +1,7 @@
 // bluez_adapter.dart
 
+import 'dart:io';
+
 import 'bluez_uuid.dart';
 import 'enums.dart';
 import 'ffi/bindings.dart';
@@ -44,9 +46,24 @@ class BlueZAdapter {
   List<BlueZUUID> get uuids => _props.uuids.map(BlueZUUID.new).toList();
 
   /// Power the adapter on or off.
+  ///
+  /// When powering on, automatically unblocks rfkill if the adapter is
+  /// soft-blocked (common on Linux desktops). Requires `rfkill` on PATH.
   Future<void> setPowered(bool value) async {
+    if (value) {
+      await _rfkillUnblock();
+    }
     BlueZBindings.adapterSetPropertyBool(
         _clientHandle, objectPath, 'Powered', value);
+  }
+
+  /// Unblock Bluetooth via rfkill if soft-blocked.
+  Future<void> _rfkillUnblock() async {
+    try {
+      await Process.run('rfkill', ['unblock', 'bluetooth']);
+    } on ProcessException {
+      // rfkill not available — ignore, setPowered may still succeed.
+    }
   }
 
   /// Start scanning for nearby Bluetooth devices.
@@ -79,7 +96,29 @@ class BlueZAdapter {
     BlueZBindings.adapterRemoveDevice(_clientHandle, objectPath, devicePath);
   }
 
-  void updateProps(BlueZAdapterProps props) {
-    _props = props;
+  void updateProps(BlueZAdapterProps partial) {
+    final mask = partial.changedMask;
+    bool m(int bit) => mask & bit != 0;
+
+    _props = BlueZAdapterProps(
+      objectPath: _props.objectPath,
+      changedMask: mask,
+      address: _props.address,
+      name: _props.name,
+      alias: m(BlueZAdapterProps.kAliasBit) ? partial.alias : _props.alias,
+      powered:
+          m(BlueZAdapterProps.kPoweredBit) ? partial.powered : _props.powered,
+      discoverable: m(BlueZAdapterProps.kDiscoverableBit)
+          ? partial.discoverable
+          : _props.discoverable,
+      pairable: m(BlueZAdapterProps.kPairableBit)
+          ? partial.pairable
+          : _props.pairable,
+      discovering: m(BlueZAdapterProps.kDiscoveringBit)
+          ? partial.discovering
+          : _props.discovering,
+      discoverableTimeout: _props.discoverableTimeout,
+      uuids: _props.uuids,
+    );
   }
 }

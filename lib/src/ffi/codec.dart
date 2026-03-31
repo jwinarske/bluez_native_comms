@@ -34,6 +34,7 @@ class GlazeCodec {
   static BlueZAdapterProps _decodeAdapterProps(_Reader r) {
     return BlueZAdapterProps(
       objectPath: r.readString(),
+      changedMask: r.readUint32(),
       address: r.readString(),
       name: r.readString(),
       alias: r.readString(),
@@ -49,6 +50,7 @@ class GlazeCodec {
   static BlueZDeviceProps _decodeDeviceProps(_Reader r) {
     return BlueZDeviceProps(
       objectPath: r.readString(),
+      changedMask: r.readUint32(),
       adapterPath: r.readString(),
       address: r.readString(),
       addressType: r.readString(),

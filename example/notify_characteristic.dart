@@ -1,19 +1,21 @@
 // example/notify_characteristic.dart
 // Demonstrates zero-copy characteristic notification with bluez_native_comms.
-// Mirrors jwinarske/flutter_reactive_ble Linux BLE pattern.
 
 import 'package:bluez_native_comms/bluez_native_comms.dart';
+
+import 'example_utils.dart';
 
 const _heartRateServiceUuid = '0000180d-0000-1000-8000-00805f9b34fb';
 const _heartRateMeasurementUuid = '00002a37-0000-1000-8000-00805f9b34fb';
 
 Future<void> main(List<String> args) async {
   if (args.isEmpty) {
-    print(
-        'Usage: dart run example/notify_characteristic.dart <device_address>');
+    print('Usage: dart run example/notify_characteristic.dart <device_address> '
+        '[--timeout <seconds>]');
     return;
   }
 
+  final timeout = parseScanTimeout(args);
   final client = BlueZClient();
   await client.connect();
 
@@ -25,20 +27,8 @@ Future<void> main(List<String> args) async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
-  print('Scanning...');
-  await adapter.startDiscovery();
-
-  BlueZDevice? target;
-  await for (final device in client.deviceAdded) {
-    if (device.address.toUpperCase() == args[0].toUpperCase()) {
-      target = device;
-      break;
-    }
-  }
-  await adapter.stopDiscovery();
-
+  final target = await findDevice(client, adapter, args[0], timeout: timeout);
   if (target == null) {
-    print('Device not found: ${args[0]}');
     await client.close();
     return;
   }

@@ -40,6 +40,18 @@ void* bluez_client_create(int64_t events_port) {
     // Snapshot the current BlueZ object tree.
     ctx->obj_mgr->get_managed_objects();
 
+    // Post a 0x00 sentinel so the Dart side knows the initial snapshot
+    // has been fully posted and can wait for it before accessing devices.
+    {
+      uint8_t sentinel = 0x00;
+      Dart_CObject obj;
+      obj.type = Dart_CObject_kTypedData;
+      obj.value.as_typed_data.type = Dart_TypedData_kUint8;
+      obj.value.as_typed_data.length = 1;
+      obj.value.as_typed_data.values = &sentinel;
+      Dart_PostCObject_DL(ctx->events_port, &obj);
+    }
+
     // Run the sdbus event loop on a dedicated thread.
     ctx->event_loop =
         std::thread([&conn = *ctx->conn]() { conn.enterEventLoop(); });
@@ -141,37 +153,22 @@ void bluez_adapter_set_property(void* handle,
 void bluez_device_connect(void* handle,
                           const char* device_path,
                           int64_t result_port) {
-  try {
-    auto* ctx = static_cast<BridgeContext*>(handle);
-    DeviceBridge device(*ctx->conn, device_path);
-    device.connect(result_port);
-  } catch (const sdbus::Error& e) {
-    fprintf(stderr, "bluez_device_connect: %s\n", e.what());
-  }
+  auto* ctx = static_cast<BridgeContext*>(handle);
+  DeviceBridge::connect_async(*ctx->conn, device_path, result_port);
 }
 
 void bluez_device_disconnect(void* handle,
                              const char* device_path,
                              int64_t result_port) {
-  try {
-    auto* ctx = static_cast<BridgeContext*>(handle);
-    DeviceBridge device(*ctx->conn, device_path);
-    device.disconnect(result_port);
-  } catch (const sdbus::Error& e) {
-    fprintf(stderr, "bluez_device_disconnect: %s\n", e.what());
-  }
+  auto* ctx = static_cast<BridgeContext*>(handle);
+  DeviceBridge::disconnect_async(*ctx->conn, device_path, result_port);
 }
 
 void bluez_device_pair(void* handle,
                        const char* device_path,
                        int64_t result_port) {
-  try {
-    auto* ctx = static_cast<BridgeContext*>(handle);
-    DeviceBridge device(*ctx->conn, device_path);
-    device.pair(result_port);
-  } catch (const sdbus::Error& e) {
-    fprintf(stderr, "bluez_device_pair: %s\n", e.what());
-  }
+  auto* ctx = static_cast<BridgeContext*>(handle);
+  DeviceBridge::pair_async(*ctx->conn, device_path, result_port);
 }
 
 void bluez_device_cancel_pairing(void* handle, const char* device_path) {

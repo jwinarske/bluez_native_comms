@@ -21,6 +21,28 @@ enum BlueZGattCharacteristicFlag {
   secureWrite,
   authorize;
 
+  /// Returns the BlueZ D-Bus flag string (e.g. `read`, `write-without-response`).
+  @override
+  String toString() => switch (this) {
+        broadcast => 'broadcast',
+        read => 'read',
+        writeWithoutResponse => 'write-without-response',
+        write => 'write',
+        notify => 'notify',
+        indicate => 'indicate',
+        authenticatedSignedWrites => 'authenticated-signed-writes',
+        extendedProperties => 'extended-properties',
+        reliableWrite => 'reliable-write',
+        writableAuxiliaries => 'writable-auxiliaries',
+        encryptRead => 'encrypt-read',
+        encryptWrite => 'encrypt-write',
+        encryptAuthenticatedRead => 'encrypt-authenticated-read',
+        encryptAuthenticatedWrite => 'encrypt-authenticated-write',
+        secureRead => 'secure-read',
+        secureWrite => 'secure-write',
+        authorize => 'authorize',
+      };
+
   static BlueZGattCharacteristicFlag fromString(String s) {
     return switch (s) {
       'broadcast' => broadcast,

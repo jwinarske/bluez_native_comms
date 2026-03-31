@@ -4,7 +4,11 @@ import 'dart:async';
 
 import 'package:bluez_native_comms/bluez_native_comms.dart';
 
-Future<void> main() async {
+import 'example_utils.dart';
+
+Future<void> main(List<String> args) async {
+  final timeout = parseScanTimeout(args);
+
   final client = BlueZClient();
   await client.connect();
 
@@ -24,7 +28,7 @@ Future<void> main() async {
     rssiThreshold: -80,
   );
 
-  print('Scanning for 10 seconds...\n');
+  print('Scanning for ${timeout.inSeconds} seconds...\n');
   await adapter.startDiscovery();
 
   final sub = client.deviceAdded.listen((device) {
@@ -35,7 +39,7 @@ Future<void> main() async {
     print('${device.address}  RSSI ${device.rssi} dBm  $name$mfr');
   });
 
-  await Future<void>.delayed(const Duration(seconds: 10));
+  await Future<void>.delayed(timeout);
   await sub.cancel();
   await adapter.stopDiscovery();
   await client.close();

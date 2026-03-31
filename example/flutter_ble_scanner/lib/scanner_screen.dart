@@ -15,10 +15,16 @@ class ScannerScreen extends StatefulWidget {
 class _ScannerScreenState extends State<ScannerScreen> {
   final _client = BlueZClient();
   final _devices = <String, BlueZDevice>{};
-  StreamSubscription<BlueZDevice>? _sub;
+  StreamSubscription<BlueZDevice>? _deviceSub;
+  StreamSubscription<BlueZAdapter>? _adapterSub;
   bool _scanning = false;
   bool _connected = false;
   String? _error;
+
+  BlueZAdapter? get _adapter =>
+      _client.adapters.isNotEmpty ? _client.adapters.first : null;
+
+  bool get _powered => _adapter?.powered ?? false;
 
   @override
   void initState() {
@@ -30,9 +36,30 @@ class _ScannerScreenState extends State<ScannerScreen> {
     try {
       await _client.connect();
       if (!mounted) return;
-      setState(() => _connected = true);
-      _sub = _client.deviceAdded.listen((device) {
-        setState(() => _devices[device.address] = device);
+      setState(() {
+        _connected = true;
+        // Seed with devices already known to BlueZ from previous scans.
+        for (final device in _client.devices) {
+          _devices[device.address] = device;
+        }
+      });
+      _deviceSub = _client.deviceAdded.listen((device) {
+        if (mounted) setState(() => _devices[device.address] = device);
+      });
+      // Monitor adapter power state changes.
+      _adapterSub = _client.adapterChanged.listen((adapter) {
+        if (!mounted) return;
+        setState(() {
+          if (adapter.powered) {
+            // Adapter just powered on — seed with known devices.
+            for (final device in _client.devices) {
+              _devices[device.address] = device;
+            }
+          } else {
+            if (_scanning) _scanning = false;
+            _devices.clear();
+          }
+        });
       });
     } catch (e) {
       if (!mounted) return;
@@ -41,20 +68,30 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   Future<void> _toggleScan() async {
-    if (!_connected || _client.adapters.isEmpty) return;
-    final adapter = _client.adapters.first;
+    final adapter = _adapter;
+    if (!_connected || adapter == null) return;
+
+    if (!_powered) {
+      await adapter.setPowered(true);
+      // Give BlueZ a moment to bring the adapter up.
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+      setState(() {});
+    }
+
     if (_scanning) {
       await adapter.stopDiscovery();
     } else {
       _devices.clear();
       await adapter.startDiscovery();
     }
-    setState(() => _scanning = !_scanning);
+    if (mounted) setState(() => _scanning = !_scanning);
   }
 
   @override
   void dispose() {
-    _sub?.cancel();
+    _deviceSub?.cancel();
+    _adapterSub?.cancel();
     _client.close();
     super.dispose();
   }
@@ -103,33 +140,59 @@ class _ScannerScreenState extends State<ScannerScreen> {
       appBar: AppBar(
         title: const Text('BLE Scanner'),
         actions: [
+          // Adapter power indicator.
+          if (_connected)
+            Icon(
+              _powered ? Icons.bluetooth : Icons.bluetooth_disabled,
+              color: _powered ? null : Colors.red,
+            ),
+          const SizedBox(width: 8),
           IconButton(
             icon: Icon(_scanning ? Icons.stop : Icons.bluetooth_searching),
             onPressed: _connected ? _toggleScan : null,
           ),
         ],
       ),
-      body: sorted.isEmpty
-          ? const Center(child: Text('No devices found. Tap scan to start.'))
-          : ListView.builder(
-              itemCount: sorted.length,
-              itemBuilder: (context, index) {
-                final device = sorted[index];
-                final name = device.name.isNotEmpty ? device.name : '(unknown)';
-                return ListTile(
-                  title: Text(name),
-                  subtitle: Text(device.address),
-                  trailing: Text('${device.rssi} dBm'),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) =>
-                          DeviceScreen(client: _client, device: device),
-                    ),
+      body: !_powered && _connected
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.bluetooth_disabled,
+                      size: 48, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text('Bluetooth adapter is powered off.'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => _adapter?.setPowered(true),
+                    child: const Text('Power On'),
                   ),
-                );
-              },
-            ),
+                ],
+              ),
+            )
+          : sorted.isEmpty
+              ? const Center(
+                  child: Text('No devices found. Tap scan to start.'))
+              : ListView.builder(
+                  itemCount: sorted.length,
+                  itemBuilder: (context, index) {
+                    final device = sorted[index];
+                    final name =
+                        device.name.isNotEmpty ? device.name : '(unknown)';
+                    return ListTile(
+                      title: Text(name),
+                      subtitle: Text(device.address),
+                      trailing: Text('${device.rssi} dBm'),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              DeviceScreen(client: _client, device: device),
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

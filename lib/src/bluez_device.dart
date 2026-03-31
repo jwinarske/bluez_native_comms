@@ -137,24 +137,66 @@ class BlueZDevice {
 
   // ── Internal ──────────────────────────────────────────────────────────────
 
-  void updateProps(BlueZDeviceProps props) {
-    final changed = _diffProps(props);
-    _props = props;
-    if (changed.isNotEmpty) _propertiesChangedCtrl.add(changed);
-  }
-
-  List<String> _diffProps(BlueZDeviceProps next) {
+  void updateProps(BlueZDeviceProps partial) {
+    final mask = partial.changedMask;
     final changed = <String>[];
-    if (_props.connected != next.connected) changed.add('Connected');
-    if (_props.rssi != next.rssi) changed.add('RSSI');
-    if (_props.paired != next.paired) changed.add('Paired');
-    if (_props.servicesResolved != next.servicesResolved) {
+
+    // Merge: only update fields whose bits are set in the mask.
+    // For full snapshots (0x04), mask == ~0 so every field is taken.
+    bool m(int bit) => mask & bit != 0;
+
+    final connected = m(BlueZDeviceProps.kConnectedBit)
+        ? partial.connected
+        : _props.connected;
+    final rssi = m(BlueZDeviceProps.kRSSIBit) ? partial.rssi : _props.rssi;
+    final paired =
+        m(BlueZDeviceProps.kPairedBit) ? partial.paired : _props.paired;
+    final servicesResolved = m(BlueZDeviceProps.kServicesResolvedBit)
+        ? partial.servicesResolved
+        : _props.servicesResolved;
+    final name = m(BlueZDeviceProps.kNameBit) ? partial.name : _props.name;
+    final trusted =
+        m(BlueZDeviceProps.kTrustedBit) ? partial.trusted : _props.trusted;
+    final blocked =
+        m(BlueZDeviceProps.kBlockedBit) ? partial.blocked : _props.blocked;
+    final alias = m(BlueZDeviceProps.kAliasBit) ? partial.alias : _props.alias;
+
+    // Detect actual changes for notification.
+    if (connected != _props.connected) changed.add('Connected');
+    if (rssi != _props.rssi) changed.add('RSSI');
+    if (paired != _props.paired) changed.add('Paired');
+    if (servicesResolved != _props.servicesResolved) {
       changed.add('ServicesResolved');
     }
-    if (_props.name != next.name) changed.add('Name');
-    if (_props.trusted != next.trusted) changed.add('Trusted');
-    if (_props.blocked != next.blocked) changed.add('Blocked');
-    return changed;
+    if (name != _props.name) changed.add('Name');
+    if (trusted != _props.trusted) changed.add('Trusted');
+    if (blocked != _props.blocked) changed.add('Blocked');
+    if (alias != _props.alias) changed.add('Alias');
+
+    _props = BlueZDeviceProps(
+      objectPath: _props.objectPath,
+      changedMask: mask,
+      adapterPath: _props.adapterPath,
+      address: _props.address,
+      addressType: _props.addressType,
+      name: name,
+      alias: alias,
+      rssi: rssi,
+      txPower: _props.txPower,
+      appearance: _props.appearance,
+      deviceClass: _props.deviceClass,
+      paired: paired,
+      trusted: trusted,
+      blocked: blocked,
+      connected: connected,
+      servicesResolved: servicesResolved,
+      legacyPairing: _props.legacyPairing,
+      uuids: _props.uuids,
+      manufacturerData: _props.manufacturerData,
+      serviceData: _props.serviceData,
+    );
+
+    if (changed.isNotEmpty) _propertiesChangedCtrl.add(changed);
   }
 
   void addService(BlueZGattServiceProps props) =>

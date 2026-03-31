@@ -46,6 +46,7 @@ class BlueZClient {
   ReceivePort? _eventsPort;
   Object? _handle;
   bool _connected = false;
+  Completer<void>? _initialSnapshotDone;
 
   // Object caches.
   final _adapters = <String, BlueZAdapter>{};
@@ -88,10 +89,12 @@ class BlueZClient {
     }
 
     _handle = handle;
+    _initialSnapshotDone = Completer<void>();
     _eventsPort!.listen(_onEvent);
 
-    // Let initial GetManagedObjects events drain.
-    await Future<void>.delayed(Duration.zero);
+    // Wait for the 0x00 sentinel posted after GetManagedObjects completes.
+    // This ensures all adapters and already-known devices are populated.
+    await _initialSnapshotDone!.future;
   }
 
   /// All currently known Bluetooth adapters.
@@ -118,6 +121,10 @@ class BlueZClient {
   void _onEvent(dynamic msg) {
     if (msg is! Uint8List) return;
     switch (msg[0]) {
+      case 0x00: // Initial snapshot complete sentinel.
+        _initialSnapshotDone?.complete();
+        _initialSnapshotDone = null;
+
       case 0x01: // BlueZAdapterProps
         final props = GlazeCodec.decode<BlueZAdapterProps>(msg, 1);
         final adapter = _adapters.putIfAbsent(
@@ -165,8 +172,11 @@ class BlueZClient {
   }
 
   // /org/bluez/hci0/dev_AA_BB.../service.../char... → /org/bluez/hci0/dev_AA_BB...
+  // Split: ['', 'org', 'bluez', 'hci0', 'dev_AA_BB...', 'service...', 'char...']
+  //         0     1       2       3        4               5             6
   static String _devicePathFromCharPath(String p) =>
-      p.split('/').take(6).join('/');
+      p.split('/').take(5).join('/');
+  // /org/bluez/hci0/dev_AA_BB.../service.../char.../desc... → same device path
   static String _devicePathFromDescPath(String p) =>
-      p.split('/').take(6).join('/');
+      p.split('/').take(5).join('/');
 }

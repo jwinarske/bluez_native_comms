@@ -1,15 +1,17 @@
 // example/connect_device.dart — connect to a device by address.
 
-import 'dart:async';
-
 import 'package:bluez_native_comms/bluez_native_comms.dart';
+
+import 'example_utils.dart';
 
 Future<void> main(List<String> args) async {
   if (args.isEmpty) {
-    print('Usage: dart run example/connect_device.dart <device_address>');
+    print('Usage: dart run example/connect_device.dart <device_address> '
+        '[--timeout <seconds>]');
     return;
   }
 
+  final timeout = parseScanTimeout(args);
   final client = BlueZClient();
   await client.connect();
 
@@ -21,20 +23,8 @@ Future<void> main(List<String> args) async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
-  print('Scanning for ${args[0]}...');
-  await adapter.startDiscovery();
-
-  BlueZDevice? target;
-  await for (final device in client.deviceAdded) {
-    if (device.address.toUpperCase() == args[0].toUpperCase()) {
-      target = device;
-      break;
-    }
-  }
-  await adapter.stopDiscovery();
-
+  final target = await findDevice(client, adapter, args[0], timeout: timeout);
   if (target == null) {
-    print('Device not found.');
     await client.close();
     return;
   }
@@ -66,6 +56,9 @@ Future<void> main(List<String> args) async {
     print('  Service: ${service.uuid}  (primary: ${service.primary})');
     for (final char in service.characteristics) {
       print('    Char: ${char.uuid}  flags: ${char.flags}');
+      for (final desc in char.descriptors) {
+        print('      Desc: ${desc.uuid}');
+      }
     }
   }
 

@@ -4,24 +4,29 @@ import 'dart:typed_data';
 
 import 'package:bluez_native_comms/bluez_native_comms.dart';
 
+import 'example_utils.dart';
+
 Future<void> main(List<String> args) async {
   if (args.length < 3) {
     print('Usage: dart run example/write_characteristic.dart '
-        '<device_address> <characteristic_uuid> <hex_bytes>');
+        '<device_address> <characteristic_uuid> <hex_bytes> '
+        '[--no-response] [--timeout <seconds>]');
     print('');
     print('  hex_bytes: space-separated hex values, e.g. "01 ff 00"');
-    print('');
-    print('Options:');
-    print('  --no-response   use write-without-response');
     return;
   }
 
   final deviceAddr = args[0];
   final charUuid = BlueZUUID(args[1]);
   final withResponse = !args.contains('--no-response');
+  final timeout = parseScanTimeout(args);
 
   // Parse hex bytes from remaining args (skip flags).
-  final hexArgs = args.skip(2).where((a) => !a.startsWith('--'));
+  final hexArgs = args.skip(2).where((a) => !a.startsWith('--')).where((a) {
+    // Skip the value after --timeout.
+    final idx = args.indexOf('--timeout');
+    return idx == -1 || args.indexOf(a) != idx + 1;
+  });
   final data =
       Uint8List.fromList(hexArgs.map((h) => int.parse(h, radix: 16)).toList());
 
@@ -36,20 +41,9 @@ Future<void> main(List<String> args) async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
   }
 
-  print('Scanning for $deviceAddr...');
-  await adapter.startDiscovery();
-
-  BlueZDevice? target;
-  await for (final device in client.deviceAdded) {
-    if (device.address.toUpperCase() == deviceAddr.toUpperCase()) {
-      target = device;
-      break;
-    }
-  }
-  await adapter.stopDiscovery();
-
+  final target =
+      await findDevice(client, adapter, deviceAddr, timeout: timeout);
   if (target == null) {
-    print('Device not found.');
     await client.close();
     return;
   }

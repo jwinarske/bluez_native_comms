@@ -160,33 +160,41 @@ void ObjectManager::subscribe_device_props(const std::string& device_path) {
           return;
         }
         // Build a partial BlueZDeviceProps with only changed fields.
-        // The Dart side merges this into its cached state.
+        // The Dart side merges this into its cached state using changedMask.
         BlueZDeviceProps dp;
         dp.objectPath = device_path;
 
         if (auto it = changed.find("Connected"); it != changed.end()) {
           dp.connected = it->second.get<bool>();
+          dp.changedMask |= kConnectedBit;
         }
         if (auto it = changed.find("RSSI"); it != changed.end()) {
           dp.rssi = it->second.get<int16_t>();
+          dp.changedMask |= kRSSIBit;
         }
         if (auto it = changed.find("Paired"); it != changed.end()) {
           dp.paired = it->second.get<bool>();
+          dp.changedMask |= kPairedBit;
         }
         if (auto it = changed.find("Trusted"); it != changed.end()) {
           dp.trusted = it->second.get<bool>();
+          dp.changedMask |= kTrustedBit;
         }
         if (auto it = changed.find("Blocked"); it != changed.end()) {
           dp.blocked = it->second.get<bool>();
+          dp.changedMask |= kBlockedBit;
         }
         if (auto it = changed.find("ServicesResolved"); it != changed.end()) {
           dp.servicesResolved = it->second.get<bool>();
+          dp.changedMask |= kServicesResolvedBit;
         }
         if (auto it = changed.find("Name"); it != changed.end()) {
           dp.name = it->second.get<std::string>();
+          dp.changedMask |= kNameBit;
         }
         if (auto it = changed.find("Alias"); it != changed.end()) {
           dp.alias = it->second.get<std::string>();
+          dp.changedMask |= kAliasBit;
         }
 
         post_glaze(0x02, dp);
@@ -217,18 +225,23 @@ void ObjectManager::subscribe_adapter_props(const std::string& adapter_path) {
 
         if (auto it = changed.find("Powered"); it != changed.end()) {
           ap.powered = it->second.get<bool>();
+          ap.changedMask |= kPoweredBit;
         }
         if (auto it = changed.find("Discovering"); it != changed.end()) {
           ap.discovering = it->second.get<bool>();
+          ap.changedMask |= kDiscoveringBit;
         }
         if (auto it = changed.find("Discoverable"); it != changed.end()) {
           ap.discoverable = it->second.get<bool>();
+          ap.changedMask |= kDiscoverableBit;
         }
         if (auto it = changed.find("Pairable"); it != changed.end()) {
           ap.pairable = it->second.get<bool>();
+          ap.changedMask |= kPairableBit;
         }
         if (auto it = changed.find("Alias"); it != changed.end()) {
           ap.alias = it->second.get<std::string>();
+          ap.changedMask |= kAdapterAliasBit;
         }
 
         post_glaze(0x01, ap);
@@ -259,6 +272,7 @@ BlueZAdapterProps ObjectManager::extract_adapter_props(
     const PropertiesMap& props) {
   BlueZAdapterProps a;
   a.objectPath = object_path;
+  a.changedMask = ~0u;  // Full snapshot: all fields valid.
   a.address = get_prop<std::string>(props, "Address");
   a.name = get_prop<std::string>(props, "Name");
   a.alias = get_prop<std::string>(props, "Alias");
@@ -276,6 +290,7 @@ BlueZDeviceProps ObjectManager::extract_device_props(
     const PropertiesMap& props) {
   BlueZDeviceProps d;
   d.objectPath = object_path;
+  d.changedMask = ~0u;  // Full snapshot: all fields valid.
   d.address = get_prop<std::string>(props, "Address");
   d.addressType = get_prop<std::string>(props, "AddressType");
   d.name = get_prop<std::string>(props, "Name");
