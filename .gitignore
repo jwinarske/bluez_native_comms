@@ -25,6 +25,9 @@ Thumbs.db
 *.o
 *.a
 
+# Generated docs
+doc/
+
 # Coverage
 coverage/
 *.lcov
