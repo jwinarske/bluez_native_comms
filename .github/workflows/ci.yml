@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:    { branches: [main, develop] }
+  pull_request: { branches: [main] }
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Format ────────────────────────────────────────────────────────────────
+  format:
+    name: Format check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: dart-lang/setup-dart@v1
+        with: { sdk: stable }
+      - run: dart pub get
+      - run: dart format --set-exit-if-changed lib/ test/ example/
+
+  # ── Static analysis + pub points dry-run ─────────────────────────────────
+  analyze:
+    name: Dart analyze + pub dry-run
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: dart-lang/setup-dart@v1
+        with: { sdk: stable }
+      - run: dart pub get
+      - run: dart analyze --fatal-infos
+      # Verify all pub.dev requirements pass before any PR merges
+      - run: dart pub publish --dry-run

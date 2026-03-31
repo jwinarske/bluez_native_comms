@@ -1,0 +1,35 @@
+name: bluez_native_comms
+description: >-
+  High-performance BlueZ Bluetooth client for Linux using native_comms and
+  sdbus-cpp. Zero-copy characteristic notifications via Dart_PostCObject_DL.
+  Drop-in API replacement for canonical/bluez.dart with lower latency.
+version: 0.1.0
+
+homepage:       https://github.com/jwinarske/bluez_native_comms
+repository:     https://github.com/jwinarske/bluez_native_comms
+issue_tracker:  https://github.com/jwinarske/bluez_native_comms/issues
+documentation:  https://pub.dev/documentation/bluez_native_comms/latest/
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+platforms:
+  linux:
+
+dependencies:
+  ffi:  ^2.1.0
+  path: ^1.9.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  coverage:     ^1.7.0
+  lints:        ^4.0.0
+  mockito:      ^5.4.0
+  test:         ^1.24.0
+
+topics:
+  - bluetooth
+  - ble
+  - bluez
+  - linux
+  - ffi

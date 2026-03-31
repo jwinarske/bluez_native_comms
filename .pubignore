@@ -1,0 +1,11 @@
+# Exclude the C++ native source, scripts, and third-party submodule.
+# The .so is not published in the package — consumers build it from source
+# or use a pre-built binary attached to the GitHub release.
+native/
+interfaces/
+scripts/
+.github/
+.clang-format
+.clang-tidy
+.gitmodules
+codecov.yaml
