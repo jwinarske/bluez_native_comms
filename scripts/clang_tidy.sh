@@ -19,11 +19,18 @@ fi
 
 echo "Using: $(command -v "${CLANG_TIDY}")"
 
-# Run clang-tidy on all project source files (not third-party).
+# Only run on project source files — exclude vendored Dart API headers,
+# glaze_meta.h (vendored from native_comms), and third_party/.
 find "${ROOT_DIR}/native/src" "${ROOT_DIR}/native/include" \
-    -name '*.cpp' -o -name '*.h' | \
-    grep -v 'dart_api' | \
-    grep -v 'third_party' | \
+    \( -name '*.cpp' -o -name '*.h' \) \
+    ! -path '*/third_party/*' \
+    ! -path '*/internal/*' \
+    ! -name 'dart_api.h' \
+    ! -name 'dart_api_dl.h' \
+    ! -name 'dart_native_api.h' \
+    ! -name 'dart_version.h' \
+    ! -name 'glaze_meta.h' \
+    -print | sort | \
     xargs "${CLANG_TIDY}" -p "${BUILD_DIR}" --warnings-as-errors='*' 2>&1
 
 echo "clang-tidy passed."

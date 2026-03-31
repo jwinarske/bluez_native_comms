@@ -2,10 +2,12 @@
 
 #include "device_bridge.h"
 
+#include <utility>
+
 DeviceBridge::DeviceBridge(sdbus::IConnection& conn,
-                           const std::string& device_path)
+                           std::string device_path)
     : conn_(conn),
-      device_path_(device_path),
+      device_path_(std::move(device_path)),
       proxy_(sdbus::createProxy(conn_,
                                 sdbus::ServiceName{kBluezService},
                                 sdbus::ObjectPath{device_path_})) {}

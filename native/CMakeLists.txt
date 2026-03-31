@@ -20,6 +20,7 @@ add_library(bluez_native STATIC
     src/object_manager.cpp
     src/adapter_bridge.cpp
     src/device_bridge.cpp
+    src/gatt_bridge.cpp
     $<TARGET_OBJECTS:dart_api_dl>
 )
 

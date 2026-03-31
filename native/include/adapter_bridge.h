@@ -16,7 +16,7 @@
 
 class AdapterBridge {
  public:
-  AdapterBridge(sdbus::IConnection& conn, const std::string& adapter_path);
+  AdapterBridge(sdbus::IConnection& conn, std::string adapter_path);
 
   // ── Discovery ───────────────────────────────────────────────────────────
 

@@ -132,3 +132,20 @@ jobs:
             -DBUILD_TESTING=ON
           cmake --build build --parallel
       - run: ./scripts/clang_tidy.sh build
+
+  # ── Coverage (PR only) ──────────────────────────────────────────────────
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-24.04
+    needs: [test-cpp]
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build gcc g++ \
+            libsystemd-dev libgtest-dev lcov
+      - run: ./scripts/coverage.sh build-cov

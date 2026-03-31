@@ -2,10 +2,12 @@
 
 #include "adapter_bridge.h"
 
+#include <utility>
+
 AdapterBridge::AdapterBridge(sdbus::IConnection& conn,
-                             const std::string& adapter_path)
+                             std::string adapter_path)
     : conn_(conn),
-      adapter_path_(adapter_path),
+      adapter_path_(std::move(adapter_path)),
       proxy_(sdbus::createProxy(conn_,
                                 sdbus::ServiceName{kBluezService},
                                 sdbus::ObjectPath{adapter_path_})) {}

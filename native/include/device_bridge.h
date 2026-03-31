@@ -15,7 +15,7 @@
 
 class DeviceBridge {
  public:
-  DeviceBridge(sdbus::IConnection& conn, const std::string& device_path);
+  DeviceBridge(sdbus::IConnection& conn, std::string device_path);
 
   // ── Async operations (post result to result_port) ───────────────────────
 
