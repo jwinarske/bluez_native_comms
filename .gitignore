@@ -1,0 +1,30 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+
+# Dart
+.dart_tool/
+.packages
+pubspec.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compiled
+*.so
+*.dylib
+*.o
+*.a
+
+# Coverage
+coverage/
+*.lcov

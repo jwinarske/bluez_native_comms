@@ -82,6 +82,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             cmake ninja-build \
             clang-19 \
+            libsystemd-dev \
             libgtest-dev
       - name: Build + test
         run: |
@@ -92,3 +93,18 @@ jobs:
             -DBUILD_TESTING=ON
           cmake --build build --parallel
           ctest --test-dir build --output-on-failure -j4
+
+  # ── ASAN + UBSan ─────────────────────────────────────────────────────────
+  asan:
+    name: ASAN + UBSan
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build clang-19 \
+            libsystemd-dev libgtest-dev
+      - run: ./scripts/asan.sh build-asan
