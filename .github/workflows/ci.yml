@@ -108,3 +108,27 @@ jobs:
             cmake ninja-build clang-19 \
             libsystemd-dev libgtest-dev
       - run: ./scripts/asan.sh build-asan
+
+  # ── clang-tidy ───────────────────────────────────────────────────────────
+  clang-tidy:
+    name: clang-tidy
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build \
+            clang-19 clang-tidy-19 \
+            libsystemd-dev libgtest-dev
+      - name: Build (for compile_commands.json)
+        run: |
+          cmake -B build native/ -GNinja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_COMPILER=clang++-19 \
+            -DCMAKE_C_COMPILER=clang-19 \
+            -DBUILD_TESTING=ON
+          cmake --build build --parallel
+      - run: ./scripts/clang_tidy.sh build

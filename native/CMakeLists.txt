@@ -15,18 +15,20 @@ add_subdirectory(third_party/sdbus-cpp EXCLUDE_FROM_ALL)
 add_library(dart_api_dl OBJECT src/dart_api_dl.c)
 target_include_directories(dart_api_dl PUBLIC include)
 
-# ── Object Manager library ───────────────────────────────────────────────────
-add_library(bluez_object_manager STATIC
+# ── Core native library ──────────────────────────────────────────────────────
+add_library(bluez_native STATIC
     src/object_manager.cpp
+    src/adapter_bridge.cpp
+    src/device_bridge.cpp
     $<TARGET_OBJECTS:dart_api_dl>
 )
 
-target_include_directories(bluez_object_manager
+target_include_directories(bluez_native
     PUBLIC include
     PRIVATE generated
 )
 
-target_link_libraries(bluez_object_manager PUBLIC sdbus-c++ pthread)
+target_link_libraries(bluez_native PUBLIC sdbus-c++ pthread)
 
 if(BUILD_TESTING)
     enable_testing()
