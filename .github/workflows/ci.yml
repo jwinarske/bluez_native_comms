@@ -105,7 +105,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build clang-19 \
+            cmake ninja-build clang-19 libclang-rt-19-dev \
             libsystemd-dev libgtest-dev
       - run: ./scripts/asan.sh build-asan
 
