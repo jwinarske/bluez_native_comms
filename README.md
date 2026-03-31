@@ -118,6 +118,7 @@ and snapshot the BlueZ object tree.
 
 | Method | Description |
 |---|---|
+| `setPowered()` | Power the adapter on or off |
 | `startDiscovery()` | Begin scanning |
 | `stopDiscovery()` | Stop scanning |
 | `setDiscoveryFilter()` | Set transport, RSSI, UUIDs filter |
@@ -199,7 +200,11 @@ Key differences:
 - [`scan_devices.dart`](example/scan_devices.dart) — scan and print discovered devices
 - [`connect_device.dart`](example/connect_device.dart) — connect and enumerate services
 - [`read_characteristic.dart`](example/read_characteristic.dart) — read a GATT value
+- [`write_characteristic.dart`](example/write_characteristic.dart) — write hex bytes to a characteristic
+- [`read_descriptor.dart`](example/read_descriptor.dart) — read all descriptors on a characteristic
 - [`notify_characteristic.dart`](example/notify_characteristic.dart) — subscribe to notifications
+- [`pair_device.dart`](example/pair_device.dart) — pair with a device
+- [`device_properties.dart`](example/device_properties.dart) — monitor live property changes (RSSI, connection state)
 - [`flutter_ble_scanner/`](example/flutter_ble_scanner/) — Flutter app with scan, connect, and GATT UI
 
 ## Troubleshooting
