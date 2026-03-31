@@ -37,7 +37,8 @@ void GattCharBridge::write_value(const uint8_t* data,
                                  bool with_response,
                                  Dart_Port_DL result_port) {
   try {
-    std::vector<uint8_t> value(data, data + static_cast<size_t>(len));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    std::vector<uint8_t> value(data, data + static_cast<size_t>(len));
     std::map<std::string, sdbus::Variant> options;
     if (!with_response) {
       options["type"] = sdbus::Variant{std::string{"command"}};
@@ -134,8 +135,7 @@ void GattCharBridge::post_error(Dart_Port_DL result_port,
 // GattDescBridge
 // ═══════════════════════════════════════════════════════════════════════════
 
-GattDescBridge::GattDescBridge(sdbus::IConnection& conn,
-                               std::string desc_path)
+GattDescBridge::GattDescBridge(sdbus::IConnection& conn, std::string desc_path)
     : conn_(conn),
       desc_path_(std::move(desc_path)),
       proxy_(sdbus::createProxy(conn_,
@@ -160,7 +160,8 @@ void GattDescBridge::write_value(const uint8_t* data,
                                  int32_t len,
                                  Dart_Port_DL result_port) {
   try {
-    std::vector<uint8_t> value(data, data + static_cast<size_t>(len));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    std::vector<uint8_t> value(data, data + static_cast<size_t>(len));
     std::map<std::string, sdbus::Variant> options;
     proxy_->callMethod("WriteValue")
         .onInterface(kGattDescIface)

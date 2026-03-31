@@ -5,5 +5,5 @@ BasedOnStyle: Chromium
 # 'vector<vector<int> >' in existing files gets formatted to
 # 'vector<vector<int>>'. ('Auto' means that clang-format will only use
 # 'int>>' if the file already contains at least one such instance.)
-Standard: c++23
+Standard: Latest
 SortIncludes: CaseSensitive

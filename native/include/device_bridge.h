@@ -42,9 +42,7 @@ class DeviceBridge {
   void set_property_bool(const std::string& name, bool value);
   void set_property_string(const std::string& name, const std::string& value);
 
-  [[nodiscard]] const std::string& object_path() const {
-    return device_path_;
-  }
+  [[nodiscard]] const std::string& object_path() const { return device_path_; }
 
  private:
   static constexpr auto kBluezService = "org.bluez";

@@ -31,9 +31,9 @@ struct ManufacturerDataEntry {
 };
 template <>
 struct glz::meta<ManufacturerDataEntry> {
-  static constexpr auto fields =
-      std::make_tuple(glz::field("companyId", &ManufacturerDataEntry::companyId),
-                      glz::field("data", &ManufacturerDataEntry::data));
+  static constexpr auto fields = std::make_tuple(
+      glz::field("companyId", &ManufacturerDataEntry::companyId),
+      glz::field("data", &ManufacturerDataEntry::data));
 };
 
 // ── Adapter properties ──────────────────────────────────────────────────────
@@ -173,12 +173,12 @@ struct BlueZGattDescProps {
 };
 template <>
 struct glz::meta<BlueZGattDescProps> {
-  static constexpr auto fields = std::make_tuple(
-      glz::field("objectPath", &BlueZGattDescProps::objectPath),
-      glz::field("charPath", &BlueZGattDescProps::charPath),
-      glz::field("uuid", &BlueZGattDescProps::uuid),
-      glz::field("value", &BlueZGattDescProps::value),
-      glz::field("handle", &BlueZGattDescProps::handle));
+  static constexpr auto fields =
+      std::make_tuple(glz::field("objectPath", &BlueZGattDescProps::objectPath),
+                      glz::field("charPath", &BlueZGattDescProps::charPath),
+                      glz::field("uuid", &BlueZGattDescProps::uuid),
+                      glz::field("value", &BlueZGattDescProps::value),
+                      glz::field("handle", &BlueZGattDescProps::handle));
 };
 
 // ── Value result (ReadValue / StartNotify notification) ─────────────────────
@@ -189,9 +189,9 @@ struct BlueZValueResult {
 };
 template <>
 struct glz::meta<BlueZValueResult> {
-  static constexpr auto fields = std::make_tuple(
-      glz::field("objectPath", &BlueZValueResult::objectPath),
-      glz::field("value", &BlueZValueResult::value));
+  static constexpr auto fields =
+      std::make_tuple(glz::field("objectPath", &BlueZValueResult::objectPath),
+                      glz::field("value", &BlueZValueResult::value));
 };
 
 // ── Error ───────────────────────────────────────────────────────────────────

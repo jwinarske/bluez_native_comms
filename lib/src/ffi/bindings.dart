@@ -50,6 +50,11 @@ class BlueZBindings {
       void Function(Pointer<Void>, Pointer<Utf8>,
           Pointer<Utf8>)>('bluez_adapter_remove_device');
 
+  static final _adapterSetDiscoveryFilter = _lib.lookupFunction<
+      Void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Uint8>, Int32),
+      void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Uint8>,
+          int)>('bluez_adapter_set_discovery_filter');
+
   static void adapterStartDiscovery(Object handle, String adapterPath) {
     final p = adapterPath.toNativeUtf8();
     _adapterStartDiscovery(handle as Pointer<Void>, p);
@@ -60,6 +65,32 @@ class BlueZBindings {
     final p = adapterPath.toNativeUtf8();
     _adapterStopDiscovery(handle as Pointer<Void>, p);
     calloc.free(p);
+  }
+
+  static void adapterSetDiscoveryFilter(Object handle, String adapterPath,
+      String? transport, int? rssi, List<String>? uuids) {
+    final p = adapterPath.toNativeUtf8();
+    // Pass null filter for now — the C side accepts empty filter.
+    _adapterSetDiscoveryFilter(handle as Pointer<Void>, p, nullptr, 0);
+    calloc.free(p);
+  }
+
+  static final _adapterSetProperty = _lib.lookupFunction<
+      Void Function(
+          Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>, Pointer<Uint8>, Int32),
+      void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>, Pointer<Uint8>,
+          int)>('bluez_adapter_set_property');
+
+  static void adapterSetPropertyBool(
+      Object handle, String adapterPath, String propName, bool value) {
+    final ap = adapterPath.toNativeUtf8();
+    final pn = propName.toNativeUtf8();
+    final buf = calloc<Uint8>();
+    buf[0] = value ? 1 : 0;
+    _adapterSetProperty(handle as Pointer<Void>, ap, pn, buf, 1);
+    calloc.free(buf);
+    calloc.free(pn);
+    calloc.free(ap);
   }
 
   static void adapterRemoveDevice(
@@ -75,8 +106,7 @@ class BlueZBindings {
 
   static final _deviceConnect = _lib.lookupFunction<
       Void Function(Pointer<Void>, Pointer<Utf8>, Int64),
-      void Function(
-          Pointer<Void>, Pointer<Utf8>, int)>('bluez_device_connect');
+      void Function(Pointer<Void>, Pointer<Utf8>, int)>('bluez_device_connect');
 
   static final _deviceDisconnect = _lib.lookupFunction<
       Void Function(Pointer<Void>, Pointer<Utf8>, Int64),
@@ -150,8 +180,7 @@ class BlueZBindings {
     final p = path.toNativeUtf8();
     final buf = calloc<Uint8>(bytes.length);
     buf.asTypedList(bytes.length).setAll(0, bytes);
-    _charWriteValue(
-        handle as Pointer<Void>, p, buf, bytes.length, withResponse,
+    _charWriteValue(handle as Pointer<Void>, p, buf, bytes.length, withResponse,
         resultPort);
     calloc.free(buf);
     calloc.free(p);
@@ -192,8 +221,7 @@ class BlueZBindings {
     final p = path.toNativeUtf8();
     final buf = calloc<Uint8>(bytes.length);
     buf.asTypedList(bytes.length).setAll(0, bytes);
-    _descWriteValue(
-        handle as Pointer<Void>, p, buf, bytes.length, resultPort);
+    _descWriteValue(handle as Pointer<Void>, p, buf, bytes.length, resultPort);
     calloc.free(buf);
     calloc.free(p);
   }

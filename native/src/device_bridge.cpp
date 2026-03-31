@@ -4,8 +4,7 @@
 
 #include <utility>
 
-DeviceBridge::DeviceBridge(sdbus::IConnection& conn,
-                           std::string device_path)
+DeviceBridge::DeviceBridge(sdbus::IConnection& conn, std::string device_path)
     : conn_(conn),
       device_path_(std::move(device_path)),
       proxy_(sdbus::createProxy(conn_,

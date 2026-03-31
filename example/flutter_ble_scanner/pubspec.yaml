@@ -1,0 +1,15 @@
+name: flutter_ble_scanner
+description: Flutter BLE scanner example using bluez_native_comms.
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  bluez_native_comms:
+    path: ../..
+
+flutter:
+  uses-material-design: true

@@ -43,6 +43,12 @@ class BlueZAdapter {
   /// UUIDs of supported profiles.
   List<BlueZUUID> get uuids => _props.uuids.map(BlueZUUID.new).toList();
 
+  /// Power the adapter on or off.
+  Future<void> setPowered(bool value) async {
+    BlueZBindings.adapterSetPropertyBool(
+        _clientHandle, objectPath, 'Powered', value);
+  }
+
   /// Start scanning for nearby Bluetooth devices.
   Future<void> startDiscovery() async {
     BlueZBindings.adapterStartDiscovery(_clientHandle, objectPath);
@@ -59,10 +65,13 @@ class BlueZAdapter {
     int? rssiThreshold,
     List<String>? uuids,
   }) async {
-    // Discovery filter encoding is handled by the native bridge.
-    // For now, call without filter data — full filter support requires
-    // encoding the filter map on the Dart side.
-    BlueZBindings.adapterStartDiscovery(_clientHandle, objectPath);
+    BlueZBindings.adapterSetDiscoveryFilter(
+      _clientHandle,
+      objectPath,
+      transport?.value,
+      rssiThreshold,
+      uuids,
+    );
   }
 
   /// Remove a discovered device from BlueZ's cache.

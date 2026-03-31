@@ -6,8 +6,7 @@ class BlueZUUID {
 
   @override
   bool operator ==(Object other) =>
-      other is BlueZUUID &&
-      value.toLowerCase() == other.value.toLowerCase();
+      other is BlueZUUID && value.toLowerCase() == other.value.toLowerCase();
 
   @override
   int get hashCode => value.toLowerCase().hashCode;

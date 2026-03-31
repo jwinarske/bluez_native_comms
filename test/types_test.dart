@@ -32,14 +32,12 @@ void main() {
           BlueZGattCharacteristicFlag.write);
       expect(BlueZGattCharacteristicFlag.fromString('notify'),
           BlueZGattCharacteristicFlag.notify);
-      expect(
-          BlueZGattCharacteristicFlag.fromString('write-without-response'),
+      expect(BlueZGattCharacteristicFlag.fromString('write-without-response'),
           BlueZGattCharacteristicFlag.writeWithoutResponse);
     });
 
     test('fromString throws on unknown flag', () {
-      expect(
-          () => BlueZGattCharacteristicFlag.fromString('unknown'),
+      expect(() => BlueZGattCharacteristicFlag.fromString('unknown'),
           throwsA(isA<ArgumentError>()));
     });
   });
@@ -65,8 +63,7 @@ void main() {
     });
 
     test('operation exception', () {
-      const e = BlueZOperationException('msg',
-          name: 'org.bluez.Error.Failed');
+      const e = BlueZOperationException('msg', name: 'org.bluez.Error.Failed');
       expect(e.name, 'org.bluez.Error.Failed');
       expect(e.message, 'msg');
       expect(e.toString(), contains('org.bluez.Error.Failed'));

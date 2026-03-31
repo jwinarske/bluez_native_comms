@@ -4,8 +4,7 @@
 
 #include <utility>
 
-AdapterBridge::AdapterBridge(sdbus::IConnection& conn,
-                             std::string adapter_path)
+AdapterBridge::AdapterBridge(sdbus::IConnection& conn, std::string adapter_path)
     : conn_(conn),
       adapter_path_(std::move(adapter_path)),
       proxy_(sdbus::createProxy(conn_,

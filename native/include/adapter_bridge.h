@@ -44,9 +44,7 @@ class AdapterBridge {
   void set_property_string(const std::string& name, const std::string& value);
   void set_property_uint32(const std::string& name, uint32_t value);
 
-  [[nodiscard]] const std::string& object_path() const {
-    return adapter_path_;
-  }
+  [[nodiscard]] const std::string& object_path() const { return adapter_path_; }
 
  private:
   static constexpr auto kBluezService = "org.bluez";

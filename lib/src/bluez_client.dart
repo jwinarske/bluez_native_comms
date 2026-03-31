@@ -10,10 +10,10 @@ import 'dart:typed_data';
 
 import 'bluez_adapter.dart';
 import 'bluez_device.dart';
+import 'exceptions.dart';
 import 'ffi/bindings.dart';
 import 'ffi/codec.dart';
 import 'ffi/types.dart';
-import 'internal/library_loader.dart';
 
 export 'bluez_adapter.dart';
 export 'bluez_device.dart';
@@ -71,11 +71,23 @@ class BlueZClient {
     _connected = true;
 
     // Initialize the Dart API DL.
-    final lib = loadBluezNc();
-    BlueZBindings.init(lib.handle);
+    BlueZBindings.init(NativeApi.initializeApiDLData);
 
     _eventsPort = ReceivePort('bluez.events');
-    _handle = BlueZBindings.clientCreate(_eventsPort!.sendPort.nativePort);
+    final handle = BlueZBindings.clientCreate(_eventsPort!.sendPort.nativePort);
+
+    // Null pointer means BlueZ daemon is not available.
+    if (handle == Pointer<Void>.fromAddress(0)) {
+      _eventsPort!.close();
+      _eventsPort = null;
+      _connected = false;
+      throw const BlueZServiceUnavailableException(
+        'BlueZ service is not available. '
+        'Ensure bluetoothd is running (systemctl start bluetooth).',
+      );
+    }
+
+    _handle = handle;
     _eventsPort!.listen(_onEvent);
 
     // Let initial GetManagedObjects events drain.

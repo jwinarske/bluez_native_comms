@@ -32,7 +32,7 @@ constexpr auto field(const char* name, MemberPtr ptr) {
 
 // Overload for deduced class type from member pointer.
 template <typename C, typename M>
-constexpr auto field(const char* name, M C::*ptr) {
+constexpr auto field(const char* name, M C::* ptr) {
   return FieldDescriptor<C, M C::*>{name, ptr};
 }
 
@@ -47,9 +47,7 @@ struct meta {
 
 namespace detail {
 
-inline void write_bytes(std::vector<uint8_t>& buf,
-                        const void* data,
-                        size_t n) {
+inline void write_bytes(std::vector<uint8_t>& buf, const void* data, size_t n) {
   const auto* p = static_cast<const uint8_t*>(data);
   buf.insert(buf.end(), p, p + n);
 }
@@ -126,9 +124,8 @@ void encode_field(std::vector<uint8_t>& buf, const std::vector<T>& v) {
 }
 
 // Encode a map<string, vector<uint8_t>>.
-inline void encode_field(
-    std::vector<uint8_t>& buf,
-    const std::map<std::string, std::vector<uint8_t>>& m) {
+inline void encode_field(std::vector<uint8_t>& buf,
+                         const std::map<std::string, std::vector<uint8_t>>& m) {
   auto count = static_cast<uint32_t>(m.size());
   write_bytes(buf, &count, sizeof(count));
   for (const auto& [key, val] : m) {
@@ -165,9 +162,7 @@ inline size_t decode_field(const uint8_t* buf, size_t offset, uint64_t& v) {
   return read_bytes(buf, offset, &v, sizeof(v));
 }
 
-inline size_t decode_field(const uint8_t* buf,
-                           size_t offset,
-                           std::string& s) {
+inline size_t decode_field(const uint8_t* buf, size_t offset, std::string& s) {
   uint32_t len{};
   offset = read_bytes(buf, offset, &len, sizeof(len));
   s.assign(reinterpret_cast<const char*>(buf + offset), len);
@@ -213,10 +208,9 @@ size_t decode_field(const uint8_t* buf, size_t offset, std::vector<T>& v) {
 }
 
 // Decode a map<string, vector<uint8_t>>.
-inline size_t decode_field(
-    const uint8_t* buf,
-    size_t offset,
-    std::map<std::string, std::vector<uint8_t>>& m) {
+inline size_t decode_field(const uint8_t* buf,
+                           size_t offset,
+                           std::map<std::string, std::vector<uint8_t>>& m) {
   uint32_t count{};
   offset = read_bytes(buf, offset, &count, sizeof(count));
   m.clear();

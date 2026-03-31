@@ -77,9 +77,7 @@ class GattDescBridge {
 
   // Write bytes to the descriptor.
   // Posts 0xFF on success, 0x20 BlueZError on failure.
-  void write_value(const uint8_t* data,
-                   int32_t len,
-                   Dart_Port_DL result_port);
+  void write_value(const uint8_t* data, int32_t len, Dart_Port_DL result_port);
 
   [[nodiscard]] const std::string& object_path() const { return desc_path_; }
 

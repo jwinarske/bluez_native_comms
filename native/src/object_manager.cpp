@@ -6,8 +6,7 @@
 
 // ── Constructor / Destructor ────────────────────────────────────────────────
 
-ObjectManager::ObjectManager(sdbus::IConnection& conn,
-                             Dart_Port_DL events_port)
+ObjectManager::ObjectManager(sdbus::IConnection& conn, Dart_Port_DL events_port)
     : conn_(conn), events_port_(events_port) {
   root_proxy_ = sdbus::createProxy(conn_, sdbus::ServiceName{kBluezService},
                                    sdbus::ObjectPath{"/"});
@@ -25,7 +24,6 @@ ObjectManager::ObjectManager(sdbus::IConnection& conn,
                    const std::vector<std::string>& interfaces) {
         on_interfaces_removed(object, interfaces);
       });
-
 }
 
 ObjectManager::~ObjectManager() {
@@ -301,9 +299,7 @@ BlueZDeviceProps ObjectManager::extract_device_props(
   // ManufacturerData: a{qv} where v is ay.
   if (auto it = props.find("ManufacturerData"); it != props.end()) {
     try {
-      auto mfr_map =
-          it->second
-              .get<std::map<uint16_t, sdbus::Variant>>();
+      auto mfr_map = it->second.get<std::map<uint16_t, sdbus::Variant>>();
       for (const auto& [company_id, variant] : mfr_map) {
         ManufacturerDataEntry entry;
         entry.companyId = company_id;
@@ -317,8 +313,7 @@ BlueZDeviceProps ObjectManager::extract_device_props(
   // ServiceData: a{sv} where v is ay.
   if (auto it = props.find("ServiceData"); it != props.end()) {
     try {
-      auto svc_map =
-          it->second.get<std::map<std::string, sdbus::Variant>>();
+      auto svc_map = it->second.get<std::map<std::string, sdbus::Variant>>();
       for (const auto& [uuid, variant] : svc_map) {
         d.serviceData[uuid] = variant.get<std::vector<uint8_t>>();
       }
@@ -393,6 +388,5 @@ void ObjectManager::post_glaze(uint8_t discriminator, const T& value) {
 template void ObjectManager::post_glaze(uint8_t, const BlueZAdapterProps&);
 template void ObjectManager::post_glaze(uint8_t, const BlueZDeviceProps&);
 template void ObjectManager::post_glaze(uint8_t, const BlueZGattCharProps&);
-template void ObjectManager::post_glaze(uint8_t,
-                                        const BlueZGattServiceProps&);
+template void ObjectManager::post_glaze(uint8_t, const BlueZGattServiceProps&);
 template void ObjectManager::post_glaze(uint8_t, const BlueZGattDescProps&);

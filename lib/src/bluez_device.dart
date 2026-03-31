@@ -24,8 +24,7 @@ class BlueZDevice {
 
   /// Fires with the list of changed property names when any device
   /// property changes (Connected, RSSI, ServicesResolved, etc.)
-  Stream<List<String>> get propertiesChanged =>
-      _propertiesChangedCtrl.stream;
+  Stream<List<String>> get propertiesChanged => _propertiesChangedCtrl.stream;
 
   final _services = <String, BlueZGattService>{};
   final _characteristics = <String, BlueZGattCharacteristic>{};
@@ -81,10 +80,9 @@ class BlueZDevice {
   List<BlueZUUID> get uuids => _props.uuids.map(BlueZUUID.new).toList();
 
   /// Manufacturer-specific data from advertisements.
-  List<BlueZManufacturerData> get manufacturerData =>
-      _props.manufacturerData
-          .map((e) => BlueZManufacturerData(e.companyId, e.data))
-          .toList();
+  List<BlueZManufacturerData> get manufacturerData => _props.manufacturerData
+      .map((e) => BlueZManufacturerData(e.companyId, e.data))
+      .toList();
 
   /// GATT services discovered after connection.
   List<BlueZGattService> get gattServices =>
@@ -102,6 +100,9 @@ class BlueZDevice {
     BlueZBindings.deviceConnect(
         _clientHandle, objectPath, port.sendPort.nativePort);
     await _awaitResult(port);
+    if (!connected) {
+      await propertiesChanged.where((_) => connected).first;
+    }
   }
 
   /// Disconnect from this device.
@@ -110,6 +111,9 @@ class BlueZDevice {
     BlueZBindings.deviceDisconnect(
         _clientHandle, objectPath, port.sendPort.nativePort);
     await _awaitResult(port);
+    if (connected) {
+      await propertiesChanged.where((_) => !connected).first;
+    }
   }
 
   /// Initiate pairing with this device.

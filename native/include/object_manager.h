@@ -52,25 +52,21 @@ class ObjectManager {
 
   // ── Property extraction from D-Bus Variant maps ─────────────────────────
 
-  static BlueZAdapterProps extract_adapter_props(
-      const std::string& object_path,
-      const PropertiesMap& props);
+  static BlueZAdapterProps extract_adapter_props(const std::string& object_path,
+                                                 const PropertiesMap& props);
 
-  static BlueZDeviceProps extract_device_props(
-      const std::string& object_path,
-      const PropertiesMap& props);
+  static BlueZDeviceProps extract_device_props(const std::string& object_path,
+                                               const PropertiesMap& props);
 
   static BlueZGattServiceProps extract_service_props(
       const std::string& object_path,
       const PropertiesMap& props);
 
-  static BlueZGattCharProps extract_char_props(
-      const std::string& object_path,
-      const PropertiesMap& props);
+  static BlueZGattCharProps extract_char_props(const std::string& object_path,
+                                               const PropertiesMap& props);
 
-  static BlueZGattDescProps extract_desc_props(
-      const std::string& object_path,
-      const PropertiesMap& props);
+  static BlueZGattDescProps extract_desc_props(const std::string& object_path,
+                                               const PropertiesMap& props);
 
   // Safe property accessors (return default on missing/type-mismatch).
   template <typename T>
@@ -80,8 +76,7 @@ class ObjectManager {
 
  private:
   static constexpr auto kBluezService = "org.bluez";
-  static constexpr auto kPropertiesIface =
-      "org.freedesktop.DBus.Properties";
+  static constexpr auto kPropertiesIface = "org.freedesktop.DBus.Properties";
   static constexpr auto kObjectManagerIface =
       "org.freedesktop.DBus.ObjectManager";
 

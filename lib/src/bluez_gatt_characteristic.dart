@@ -26,8 +26,7 @@ class BlueZGattCharacteristic {
   Stream<List<int>> get value => _valueCtrl.stream;
 
   /// @nodoc — internal constructor, not part of public API.
-  BlueZGattCharacteristic.internal(
-      this._clientHandle, BlueZGattCharProps props)
+  BlueZGattCharacteristic.internal(this._clientHandle, BlueZGattCharProps props)
       : _props = props;
 
   /// D-Bus object path of this characteristic.
@@ -79,8 +78,7 @@ class BlueZGattCharacteristic {
   Future<void> writeValue(List<int> data, {bool withResponse = true}) async {
     final bytes = Uint8List.fromList(data);
     final port = ReceivePort();
-    BlueZBindings.charWriteValue(
-        _clientHandle, objectPath, bytes, withResponse,
+    BlueZBindings.charWriteValue(_clientHandle, objectPath, bytes, withResponse,
         port.sendPort.nativePort);
     final msg = await port.first as Uint8List;
     port.close();
@@ -119,6 +117,5 @@ class BlueZGattCharacteristic {
   // Called by BlueZClient._onEvent when 0x03 arrives.
   void postValue(List<int> bytes) => _valueCtrl.add(bytes);
 
-  void addDescriptor(BlueZGattDescriptor d) =>
-      _descriptors[d.objectPath] = d;
+  void addDescriptor(BlueZGattDescriptor d) => _descriptors[d.objectPath] = d;
 }

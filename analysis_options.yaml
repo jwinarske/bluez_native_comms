@@ -11,6 +11,7 @@ analyzer:
     todo:                             info
   exclude:
     - lib/src/ffi/types.dart   # generated-adjacent, some casting needed
+    - example/flutter_ble_scanner/**  # requires Flutter SDK for analysis
 
 linter:
   rules:
