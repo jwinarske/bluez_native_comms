@@ -31,12 +31,12 @@ with lower latency.
 
 Ubuntu/Debian:
 ```bash
-sudo apt-get install cmake ninja-build clang libsystemd-dev
+sudo apt-get install cmake ninja-build clang libsystemd-dev pkg-config
 ```
 
 Fedora:
 ```bash
-sudo dnf install cmake ninja-build clang systemd-devel
+sudo dnf install cmake ninja-build clang systemd-devel pkgconf-pkg-config
 ```
 
 ### 2. Add the package
